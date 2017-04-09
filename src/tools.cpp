@@ -1,6 +1,7 @@
-#include <iostream>
-#include <cassert>
 #include "tools.h"
+#include <iostream>
+#include <vector>
+#include <cassert>
 
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
@@ -12,14 +13,12 @@ Tools::~Tools() {}
 
 VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
                               const vector<VectorXd> &ground_truth) {
-
   assert(!estimations.empty());
 
   VectorXd resSq(estimations.front().size());
   resSq.setZero();
 
-  for(std::size_t i = 0; i < estimations.size(); ++i)
-  {
+  for (std::size_t i = 0; i < estimations.size(); ++i) {
     const auto& est = estimations.at(i);
     const auto& gt = ground_truth.at(i);
     const auto residual = (est - gt).array();
