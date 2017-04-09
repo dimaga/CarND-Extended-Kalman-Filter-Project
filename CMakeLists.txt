@@ -13,7 +13,7 @@ set(sources_main
     src/main.cpp)
 
 set(sources_unittests
-    src/main.cpp)
+    src/unittests.cpp)
 
 set(headers
     src/FusionEKF.h
