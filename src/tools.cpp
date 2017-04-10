@@ -7,13 +7,10 @@ using Eigen::VectorXd;
 using Eigen::MatrixXd;
 using std::vector;
 
-Tools::Tools() {}
-
-Tools::~Tools() {}
-
-VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
-                              const vector<VectorXd> &ground_truth) {
+VectorXd CalculateRMSE(const vector<VectorXd> &estimations,
+                       const vector<VectorXd> &ground_truth) {
   assert(!estimations.empty());
+  assert(estimations.size() == ground_truth.size());
 
   VectorXd resSq(estimations.front().size());
   resSq.setZero();
@@ -30,7 +27,7 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
   return resSq.cwiseSqrt();
 }
 
-MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
+MatrixXd CalculateJacobian(const VectorXd& x_state) {
   MatrixXd result(x_state.size(), x_state.size());
   result.setZero();
   /**

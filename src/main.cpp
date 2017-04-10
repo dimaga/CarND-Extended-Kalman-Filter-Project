@@ -27,11 +27,11 @@ void check_arguments(int argc, char* argv[]) {
   bool has_valid_args = false;
 
   // make sure the user has provided input and output files
-  if (argc == 1) {
+  if (1 == argc) {
     cerr << usage_instructions << endl;
-  } else if (argc == 2) {
+  } else if (2 == argc) {
     cerr << "Please include an output file.\n" << usage_instructions << endl;
-  } else if (argc == 3) {
+  } else if (3 == argc) {
     has_valid_args = true;
   } else if (argc > 3) {
     cerr << "Too many arguments.\n" << usage_instructions << endl;
@@ -60,10 +60,10 @@ void check_files(const ifstream& in_file,
 int main(int argc, char* argv[]) {
   check_arguments(argc, argv);
 
-  string in_file_name_ = argv[1];
+  const string in_file_name_ = argv[1];
   ifstream in_file_(in_file_name_.c_str(), ifstream::in);
 
-  string out_file_name_ = argv[2];
+  const string out_file_name_ = argv[2];
   ofstream out_file_(out_file_name_.c_str(), ofstream::out);
 
   check_files(in_file_, in_file_name_, out_file_, out_file_name_);
@@ -176,9 +176,8 @@ int main(int argc, char* argv[]) {
   }
 
   // compute the accuracy (RMSE)
-  Tools tools;
   cout << "Accuracy - RMSE:" << endl;
-  cout << tools.CalculateRMSE(estimations, ground_truth) << endl;
+  cout << CalculateRMSE(estimations, ground_truth) << endl;
 
   // close files
   if (out_file_.is_open()) {

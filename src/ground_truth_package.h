@@ -7,12 +7,6 @@
 class GroundTruthPackage {
  public:
   std::int64_t timestamp_;
-
-  enum SensorType {
-    LASER,
-    RADAR
-  } sensor_type_;
-
   Eigen::VectorXd gt_values_;
 };
 
