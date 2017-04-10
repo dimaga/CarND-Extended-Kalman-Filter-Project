@@ -90,8 +90,8 @@ int main(int argc, char* argv[]) {
       // read measurements at this timestamp
       meas_package.sensor_type_ = MeasurementPackage::LASER;
       meas_package.raw_measurements_ = VectorXd(2);
-      float x;
-      float y;
+      double x;
+      double y;
       iss >> x;
       iss >> y;
       meas_package.raw_measurements_ << x, y;
@@ -104,9 +104,9 @@ int main(int argc, char* argv[]) {
       // read measurements at this timestamp
       meas_package.sensor_type_ = MeasurementPackage::RADAR;
       meas_package.raw_measurements_ = VectorXd(3);
-      float ro;
-      float phi;
-      float ro_dot;
+      double ro;
+      double phi;
+      double ro_dot;
       iss >> ro;
       iss >> phi;
       iss >> ro_dot;
@@ -117,10 +117,10 @@ int main(int argc, char* argv[]) {
     }
 
     // read ground truth data to compare later
-    float x_gt;
-    float y_gt;
-    float vx_gt;
-    float vy_gt;
+    double x_gt;
+    double y_gt;
+    double vx_gt;
+    double vy_gt;
     iss >> x_gt;
     iss >> y_gt;
     iss >> vx_gt;
@@ -159,8 +159,8 @@ int main(int argc, char* argv[]) {
       out_file_ << mpl.raw_measurements_(1) << "\t";
     } else if (MeasurementPackage::RADAR == mpl.sensor_type_) {
       // output the estimation in the cartesian coordinates
-      float ro = mpl.raw_measurements_(0);
-      float phi = mpl.raw_measurements_(1);
+      double ro = mpl.raw_measurements_(0);
+      double phi = mpl.raw_measurements_(1);
       out_file_ << ro * cos(phi) << "\t";  // p1_meas
       out_file_ << ro * sin(phi) << "\t";  // ps_meas
     }
