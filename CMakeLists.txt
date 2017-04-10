@@ -19,6 +19,7 @@ set(headers
     src/FusionEKF.h
     src/kalman_filter.h
     src/ground_truth_package.h
+    src/measurement_package.h
     src/tools.h)
 
 add_executable(ExtendedKF ${sources} ${sources_main} ${headers})

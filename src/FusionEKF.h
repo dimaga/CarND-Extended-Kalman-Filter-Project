@@ -1,5 +1,5 @@
-#ifndef FusionEKF_H_
-#define FusionEKF_H_
+#ifndef SRC_FUSIONEKF_H_
+#define SRC_FUSIONEKF_H_
 
 #include "measurement_package.h"
 #include "Eigen/Dense"
@@ -10,7 +10,7 @@
 #include "tools.h"
 
 class FusionEKF {
-public:
+ public:
   /**
   * Constructor.
   */
@@ -31,12 +31,13 @@ public:
   */
   KalmanFilter ekf_;
 
-private:
-  // check whether the tracking toolbox was initiallized or not (first measurement)
+ private:
+  // check whether the tracking toolbox was initiallized or not (first
+  // measurement)
   bool is_initialized_;
 
   // previous timestamp
-  long previous_timestamp_;
+  std::int64_t previous_timestamp_;
 
   // tool object used to compute Jacobian and RMSE
   Tools tools;
@@ -46,4 +47,4 @@ private:
   Eigen::MatrixXd Hj_;
 };
 
-#endif /* FusionEKF_H_ */
+#endif  // SRC_FUSIONEKF_H_
