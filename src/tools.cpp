@@ -4,11 +4,14 @@
 #include <cassert>
 
 using Eigen::VectorXd;
+using Eigen::Vector4d;
+using Eigen::Vector3d;
 using Eigen::MatrixXd;
+using Eigen::Matrix3d;
 using std::vector;
 
-VectorXd CalculateRMSE(const vector<VectorXd> &estimations,
-                       const vector<VectorXd> &ground_truth) {
+VectorXd EvaluateRmse(const vector<VectorXd> &estimations,
+                      const vector<VectorXd> &ground_truth) {
   assert(!estimations.empty());
   assert(estimations.size() == ground_truth.size());
 
@@ -27,8 +30,13 @@ VectorXd CalculateRMSE(const vector<VectorXd> &estimations,
   return resSq.cwiseSqrt();
 }
 
-MatrixXd CalculateJacobian(const VectorXd& x_state) {
-  MatrixXd result(x_state.size(), x_state.size());
+Vector3d PredictRadarMeasurement(const Vector4d& x_state) {
+  Vector3d result;
+  return result;
+}
+
+Matrix3d PredictRadarMeasurementJac(const Vector4d& x_state) {
+  Matrix3d result;
   result.setZero();
   /**
    TODO:
