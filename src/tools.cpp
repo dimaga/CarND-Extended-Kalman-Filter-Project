@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <cassert>
+#include <cmath>
 
 using Eigen::VectorXd;
 using Eigen::Vector4d;
@@ -9,6 +10,12 @@ using Eigen::Vector3d;
 using Eigen::MatrixXd;
 using Eigen::Matrix3d;
 using std::vector;
+
+namespace {
+bool IsRadarMeasurementAllowed(const Vector4d& x_state) {
+  return std::abs(x_state[0]) > 1e-5 || std::abs(x_state[1]) > 1e-5;
+}
+}
 
 VectorXd EvaluateRmse(const vector<VectorXd> &estimations,
                       const vector<VectorXd> &ground_truth) {
@@ -30,17 +37,27 @@ VectorXd EvaluateRmse(const vector<VectorXd> &estimations,
   return resSq.cwiseSqrt();
 }
 
-Vector3d PredictRadarMeasurement(const Vector4d& x_state) {
-  Vector3d result;
-  return result;
+bool PredictRadarMeasurement(const Vector4d& x_state,
+                             Vector3d* pMeasurement) {
+  if (!IsRadarMeasurementAllowed(x_state)) {
+    return false;
+  }
+
+  const double ro = x_state.head(2).norm();
+
+  (*pMeasurement) <<
+    ro,
+    std::atan2(x_state[1], x_state[0]),
+    x_state.head(2).dot(x_state.tail(2)) / ro;
+
+  return true;
 }
 
-Matrix3d PredictRadarMeasurementJac(const Vector4d& x_state) {
-  Matrix3d result;
-  result.setZero();
-  /**
-   TODO:
-   * Calculate a Jacobian here.
-   */
-  return result;
+bool PredictRadarMeasurementJac(const Vector4d& x_state,
+                                MatrixXd* pMeasurementJac) {
+  if (!IsRadarMeasurementAllowed(x_state)) {
+    return false;
+  }
+
+  return true;
 }

@@ -6,7 +6,10 @@
 Eigen::VectorXd EvaluateRmse(const std::vector<Eigen::VectorXd> &estimations,
                              const std::vector<Eigen::VectorXd> &ground_truth);
 
-Eigen::Vector3d PredictRadarMeasurement(const Eigen::Vector4d& x_state);
-Eigen::Matrix3d PredictRadarMeasurementJac(const Eigen::Vector4d& x_state);
+bool PredictRadarMeasurement(const Eigen::Vector4d& x_state,
+                             Eigen::Vector3d* pMeasurement);
+
+bool PredictRadarMeasurementJac(const Eigen::Vector4d& x_state,
+                                Eigen::MatrixXd* pMeasurementJac);
 
 #endif  // SRC_TOOLS_H_
