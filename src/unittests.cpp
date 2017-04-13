@@ -54,8 +54,7 @@ TEST_CASE("PredictRadarMeasurementJac() tests",
     Vector3d m1{Vector3d::Zero()};
     Vector3d m0{Vector3d::Zero()};
 
-    SECTION("px grad")
-    {
+    SECTION("px grad") {
       REQUIRE(PredictRadarMeasurement(v + Vector4d{kEps, 0.0, 0.0, 0.0}, &m1));
       REQUIRE(PredictRadarMeasurement(v - Vector4d{kEps, 0.0, 0.0, 0.0}, &m0));
       const auto grad = (m1 - m0) / (2.0 * kEps);
@@ -64,8 +63,7 @@ TEST_CASE("PredictRadarMeasurementJac() tests",
       REQUIRE(Approx(grad(2)) == jac(2, 0));
     }
 
-    SECTION("py grad")
-    {
+    SECTION("py grad") {
       REQUIRE(PredictRadarMeasurement(v + Vector4d{0.0, kEps, 0.0, 0.0}, &m1));
       REQUIRE(PredictRadarMeasurement(v - Vector4d{0.0, kEps, 0.0, 0.0}, &m0));
       const auto grad = (m1 - m0) / (2.0 * kEps);
@@ -74,8 +72,7 @@ TEST_CASE("PredictRadarMeasurementJac() tests",
       REQUIRE(Approx(grad(2)) == jac(2, 1));
     }
 
-    SECTION("vx grad")
-    {
+    SECTION("vx grad") {
       REQUIRE(PredictRadarMeasurement(v + Vector4d{0.0, 0.0, kEps, 0.0}, &m1));
       REQUIRE(PredictRadarMeasurement(v - Vector4d{0.0, 0.0, kEps, 0.0}, &m0));
       const auto grad = (m1 - m0) / (2.0 * kEps);
@@ -84,8 +81,7 @@ TEST_CASE("PredictRadarMeasurementJac() tests",
       REQUIRE(Approx(grad(2)) == jac(2, 2));
     }
 
-    SECTION("vy grad")
-    {
+    SECTION("vy grad") {
       REQUIRE(PredictRadarMeasurement(v + Vector4d{0.0, 0.0, 0.0, kEps}, &m1));
       REQUIRE(PredictRadarMeasurement(v - Vector4d{0.0, 0.0, 0.0, kEps}, &m0));
       const auto grad = (m1 - m0) / (2.0 * kEps);

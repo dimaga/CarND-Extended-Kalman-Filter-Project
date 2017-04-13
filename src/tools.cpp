@@ -59,5 +59,21 @@ bool PredictRadarMeasurementJac(const Vector4d& x_state,
     return false;
   }
 
+  pMeasurementJac->resize(3, 4);
+
+  const double inv_ro_sq = 1.0 / x_state.head(2).squaredNorm();
+  const double inv_ro = std::sqrt(inv_ro_sq);
+  const double inv_ro_3_2 = inv_ro_sq * inv_ro;
+  const double px = x_state(0);
+  const double py = x_state(1);
+  const double v_x_p = x_state(2) * py - x_state(3) * px;
+  const double px_inv_ro = px * inv_ro;
+  const double py_inv_ro = py * inv_ro;
+
+  (*pMeasurementJac) <<
+    px_inv_ro, py * inv_ro, 0.0, 0.0,
+    -py * inv_ro_sq, px * inv_ro_sq, 0.0, 0.0,
+    py * v_x_p * inv_ro_3_2, -px * v_x_p * inv_ro_3_2, px_inv_ro, py_inv_ro;
+
   return true;
 }
