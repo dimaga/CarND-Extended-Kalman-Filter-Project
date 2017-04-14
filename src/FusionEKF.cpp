@@ -12,11 +12,8 @@ using std::cout;
 /*
  * Constructor.
  */
-FusionEKF::FusionEKF() {
-  is_initialized_ = false;
-
-  previous_timestamp_ = 0;
-
+FusionEKF::FusionEKF(IKalmanFilter* kf)
+  : kf_(kf) {
   // initializing matrices
   R_laser_ = MatrixXd(2, 2);
   R_radar_ = MatrixXd(3, 3);
@@ -39,11 +36,6 @@ FusionEKF::FusionEKF() {
   */
 }
 
-/**
-* Destructor.
-*/
-FusionEKF::~FusionEKF() {}
-
 void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   /*****************************************************************************
    *  Initialization
@@ -56,9 +48,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       * Remember: you'll need to convert radar from polar to cartesian coordinates.
     */
     // first measurement
-    cout << "EKF: " << endl;
-    ekf_.x_ = VectorXd(4);
-    ekf_.x_ << 1, 1, 1, 1;
+    kf_->SetState(Eigen::Vector4d{1, 1, 1, 1}, Eigen::Matrix4d{});
 
     if (MeasurementPackage::RADAR == measurement_pack.sensor_type_) {
       /**
@@ -87,7 +77,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
      * Use noise_ax = 9 and noise_ay = 9 for your Q matrix.
    */
 
-  ekf_.Predict();
+  kf_->Predict();
 
   /*****************************************************************************
    *  Update
@@ -104,8 +94,4 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
   } else {
     // Laser updates
   }
-
-  // print the output
-  cout << "x_ = " << ekf_.x_ << endl;
-  cout << "P_ = " << ekf_.P_ << endl;
 }

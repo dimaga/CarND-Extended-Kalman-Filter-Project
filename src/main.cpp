@@ -131,7 +131,8 @@ int main(int argc, char* argv[]) {
   }
 
   // Create a Fusion EKF instance
-  FusionEKF fusionEKF;
+  KalmanFilter kf;
+  FusionEKF fusionEKF(&kf);
 
   // used to compute the RMSE later
   vector<VectorXd> estimations;
@@ -140,39 +141,43 @@ int main(int argc, char* argv[]) {
   // Call the EKF-based fusion
   size_t N = measurement_pack_list.size();
   for (size_t k = 0; k < N; ++k) {
-    const auto& mpl = measurement_pack_list[k];
+    const auto& measurement = measurement_pack_list[k];
 
     // start filtering from the second frame
     // (the speed is unknown in the first frame)
-    fusionEKF.ProcessMeasurement(mpl);
+    fusionEKF.ProcessMeasurement(measurement);
+
+    const auto& x = kf.GetStateMean();
 
     // output the estimation
-    out_file_ << fusionEKF.ekf_.x_(0) << "\t";
-    out_file_ << fusionEKF.ekf_.x_(1) << "\t";
-    out_file_ << fusionEKF.ekf_.x_(2) << "\t";
-    out_file_ << fusionEKF.ekf_.x_(3) << "\t";
+    out_file_ << x(0) << "\t";
+    out_file_ << x(1) << "\t";
+    out_file_ << x(2) << "\t";
+    out_file_ << x(3) << "\t";
 
     // output the measurements
-    if (MeasurementPackage::LASER == mpl.sensor_type_) {
+    if (MeasurementPackage::LASER == measurement.sensor_type_) {
       // output the estimation
-      out_file_ << mpl.raw_measurements_(0) << "\t";
-      out_file_ << mpl.raw_measurements_(1) << "\t";
-    } else if (MeasurementPackage::RADAR == mpl.sensor_type_) {
+      out_file_ << measurement.raw_measurements_(0) << "\t";
+      out_file_ << measurement.raw_measurements_(1) << "\t";
+    } else if (MeasurementPackage::RADAR == measurement.sensor_type_) {
       // output the estimation in the cartesian coordinates
-      double ro = mpl.raw_measurements_(0);
-      double phi = mpl.raw_measurements_(1);
+      double ro = measurement.raw_measurements_(0);
+      double phi = measurement.raw_measurements_(1);
       out_file_ << ro * cos(phi) << "\t";  // p1_meas
       out_file_ << ro * sin(phi) << "\t";  // ps_meas
     }
 
     // output the ground truth packages
-    out_file_ << gt_pack_list[k].gt_values_(0) << "\t";
-    out_file_ << gt_pack_list[k].gt_values_(1) << "\t";
-    out_file_ << gt_pack_list[k].gt_values_(2) << "\t";
-    out_file_ << gt_pack_list[k].gt_values_(3) << "\n";
+    const auto& ground_truth_item = gt_pack_list[k].gt_values_;
 
-    estimations.push_back(fusionEKF.ekf_.x_);
-    ground_truth.push_back(gt_pack_list[k].gt_values_);
+    out_file_ << ground_truth_item(0) << "\t";
+    out_file_ << ground_truth_item(1) << "\t";
+    out_file_ << ground_truth_item(2) << "\t";
+    out_file_ << ground_truth_item(3) << "\n";
+
+    estimations.push_back(x);
+    ground_truth.push_back(ground_truth_item);
   }
 
   // compute the accuracy (RMSE)

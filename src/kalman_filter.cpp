@@ -3,10 +3,6 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-KalmanFilter::KalmanFilter() {}
-
-KalmanFilter::~KalmanFilter() {}
-
 void KalmanFilter::Init(const VectorXd &x_in,
                         const MatrixXd &P_in,
                         const MatrixXd &F_in,
@@ -40,4 +36,19 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   TODO:
     * update the state by using Extended Kalman Filter equations
   */
+}
+
+void KalmanFilter::SetState(const Eigen::VectorXd& state_mean,
+                            const Eigen::MatrixXd& state_cov) {
+  x_ = state_mean;
+  P_ = state_cov;
+}
+
+Eigen::VectorXd KalmanFilter::GetStateMean() const {
+  return x_;
+}
+
+
+Eigen::MatrixXd KalmanFilter::GetStateCov() const {
+  return P_;
 }

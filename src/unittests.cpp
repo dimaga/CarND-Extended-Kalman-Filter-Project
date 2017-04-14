@@ -1,6 +1,8 @@
 #define CATCH_CONFIG_MAIN
 #include "Catch/catch.hpp"
 #include "tools.h"
+#include "FusionEKF.h"
+#include "kalman_filter.h"
 #include "Eigen/Dense"
 #include <vector>
 #include <cmath>
@@ -94,4 +96,33 @@ TEST_CASE("PredictRadarMeasurementJac() tests",
   SECTION("Boundary value") {
     REQUIRE(!PredictRadarMeasurementJac({0.0, 0.0, 1.0, 2.0}, &jac));
   }
+}
+
+class KalmanFilterStub : public IKalmanFilter {
+ public:
+  void Init(const Eigen::VectorXd &x_in,
+            const Eigen::MatrixXd &P_in,
+            const Eigen::MatrixXd &F_in,
+            const Eigen::MatrixXd &H_in,
+            const Eigen::MatrixXd &R_in,
+            const Eigen::MatrixXd &Q_in) override {
+  }
+
+  void Predict() override {
+  }
+
+  void Update(const Eigen::VectorXd &z) override {
+  }
+
+  void UpdateEKF(const Eigen::VectorXd &z) override {
+  }
+
+  void SetState(const Eigen::VectorXd& state_mean,
+                const Eigen::MatrixXd& state_cov) override {
+  }
+};
+
+TEST_CASE("FusionEKF tests", "[tools][FusionEKF]") {
+  KalmanFilterStub stub;
+  FusionEKF fusion(&stub);
 }
