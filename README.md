@@ -1,5 +1,6 @@
-# Extended Kalman Filter Project Starter Code
-Self-Driving Car Engineer Nanodegree Program
+# Extended Kalman Filter
+
+My solution of CarND-Extended-Kalman-Filter-Project assignment from Udacity Self Driving Car nanodegree course, Term 2.
 
 ---
 
