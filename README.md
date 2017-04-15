@@ -16,9 +16,9 @@ I used cmake 3.7.2 to build project files.
 
 To enforce [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html), I included Google's `cpplint.py` file available in `./src/Lint` folder. This tool expects the presense of python2.7 installed. To check code style of my code, run the following command line (from `./src/Lint`):
 
-'''
+```
 ./cpplint.py ../*.h ../*.cpp
-'''
+```
 
 ## Project Structure
 
