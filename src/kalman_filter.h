@@ -52,23 +52,8 @@ class KalmanFilter : public IKalmanFilter {
   const MatrixXd& GetStateCov() const;
 
  private:
-  // state vector
-  VectorXd x_;
-
-  // state covariance matrix
-  MatrixXd P_;
-
-  // state transistion matrix
-  MatrixXd F_;
-
-  // process covariance matrix
-  MatrixXd Q_;
-
-  // measurement matrix
-  MatrixXd H_;
-
-  // measurement covariance matrix
-  MatrixXd R_;
+  VectorXd state_mean_;
+  MatrixXd state_cov_;
 };
 
 #endif  // SRC_KALMAN_FILTER_H_

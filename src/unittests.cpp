@@ -285,3 +285,63 @@ TEST_CASE("FusionEKF tests", "[tools][FusionEKF]") {
     }
   }
 }
+
+TEST_CASE("Kalman Filter tests", "[tools][KalmanFilter][kalman_filter]") {
+  SECTION("1D position and speed") {
+    using Eigen::Vector2d;
+    using Eigen::Matrix2d;
+
+    KalmanFilter kf;
+
+    const Matrix2d initial_state_cov = Matrix2d::Identity() * 100;
+
+    kf.SetState(Vector2d{-1.0, 2.0}, initial_state_cov);
+
+    SECTION("Test Prediction") {
+      Matrix2d F;
+      F <<
+        1.0, 1.0,
+        0.0, 1.0;
+      kf.Predict(F, Matrix2d::Identity() * 10);
+
+      {
+        const auto& state_mean = kf.GetStateMean();
+        REQUIRE(Approx(1.0) == state_mean(0));
+        REQUIRE(Approx(2.0) == state_mean(1));
+
+        const auto& state_cov = kf.GetStateCov();
+        REQUIRE(1.0 < state_cov(0, 1));
+        REQUIRE(Approx(state_cov(1, 0)) == state_cov(0, 1));
+        REQUIRE(initial_state_cov(0, 0) < state_cov(0, 0));
+        REQUIRE(initial_state_cov(1, 1) < state_cov(1, 1));
+      }
+
+      SECTION("Test Measurement Position Update") {
+        Eigen::MatrixXd H(1, 2);
+        H << 1.0, 0.0;
+
+        Eigen::VectorXd z(1);
+        z << 10.0;
+
+        Eigen::MatrixXd R(1, 1);
+        R << 0.0001;
+
+        const auto y = z - H * kf.GetStateMean();
+        kf.Update(y, H, R);
+
+        {
+          const auto& state_mean = kf.GetStateMean();
+          REQUIRE(Approx(10.0) == state_mean(0));
+
+          const auto& state_cov = kf.GetStateCov();
+          REQUIRE(Approx(state_cov(1, 0)) == state_cov(0, 1));
+          REQUIRE(1e-5 < state_cov(0, 0));
+          REQUIRE(1e-5 < state_cov(1, 1));
+          REQUIRE(initial_state_cov(0, 0) > state_cov(0, 0));
+          REQUIRE(initial_state_cov(1, 1) > state_cov(1, 1));
+          REQUIRE(R(0, 0) > state_cov(0, 0));
+        }
+      }
+    }
+  }
+}
