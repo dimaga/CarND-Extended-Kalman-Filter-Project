@@ -26,9 +26,9 @@ The project consists of **ExtendedKF** and **unittests** applications.
 
 **ExtendedKF** application has the same command line syntax as in the original [repo](https://github.com/udacity/CarND-Extended-Kalman-Filter-Project). Use the same build commands to generate and compile project files as described there.
 
-For **unittests**, I used [Catch](https://github.com/philsquared/Catch) framework, consisting of a single file in `./src/Catch` folder. All unit tests are implemented in `./src/unittests.cpp` file.
+For **unittests**, I used [Catch](https://github.com/philsquared/Catch) framework, consisting of a single file `./src/Catch/catch.hpp`.
 
-For more expressive and laconic code, I enforced using C++11 standard in my project files by -std=c++11 command.
+For more expressive and laconic code, I enforced using C++11 standard in CMake file by `-std=c++11` command.
 
 The code consists of the following modules:
 * `FusionEKF.h`/`.cpp` implements sensor fusion code for pedestrian detection by Lidar and Radar sensors
