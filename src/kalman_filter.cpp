@@ -3,52 +3,26 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
-void KalmanFilter::Init(const VectorXd &x_in,
-                        const MatrixXd &P_in,
-                        const MatrixXd &F_in,
-                        const MatrixXd &H_in,
-                        const MatrixXd &R_in,
-                        const MatrixXd &Q_in) {
-  x_ = x_in;
-  P_ = P_in;
-  F_ = F_in;
-  H_ = H_in;
-  R_ = R_in;
-  Q_ = Q_in;
-}
 
-void KalmanFilter::Predict() {
-  /**
-  TODO:
-    * predict the state
-  */
-}
-
-void KalmanFilter::Update(const VectorXd &z) {
-  /**
-  TODO:
-    * update the state by using Kalman Filter equations
-  */
-}
-
-void KalmanFilter::UpdateEKF(const VectorXd &z) {
-  /**
-  TODO:
-    * update the state by using Extended Kalman Filter equations
-  */
-}
-
-void KalmanFilter::SetState(const Eigen::VectorXd& state_mean,
-                            const Eigen::MatrixXd& state_cov) {
+void KalmanFilter::SetState(const VectorXd& state_mean,
+                            const MatrixXd& state_cov) {
   x_ = state_mean;
   P_ = state_cov;
 }
 
-Eigen::VectorXd KalmanFilter::GetStateMean() const {
+void KalmanFilter::Predict(const MatrixXd &F, const MatrixXd &Q) {
+}
+
+void KalmanFilter::Update(const VectorXd &y,
+                          const MatrixXd &H,
+                          const MatrixXd &R) {
+}
+
+const Eigen::VectorXd& KalmanFilter::GetStateMean() const {
   return x_;
 }
 
 
-Eigen::MatrixXd KalmanFilter::GetStateCov() const {
+const Eigen::MatrixXd& KalmanFilter::GetStateCov() const {
   return P_;
 }

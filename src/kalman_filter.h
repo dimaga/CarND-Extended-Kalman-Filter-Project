@@ -4,69 +4,71 @@
 
 class IKalmanFilter {
  public:
+  using VectorXd = Eigen::VectorXd;
+  using MatrixXd = Eigen::MatrixXd;
+
   virtual ~IKalmanFilter() = default;
 
   /**
-   * Init Initializes Kalman filter
-   * @param x_in Initial state
-   * @param P_in Initial state covariance
-   * @param F_in Transition matrix
-   * @param H_in Measurement matrix
-   * @param R_in Measurement covariance matrix
-   * @param Q_in Process covariance matrix
+   * Set Kalman Filter state and its noise covariance matrix
+   * @param state_mean Initial state
+   * @param state_cov Initial state covariance
    */
-  virtual void Init(const Eigen::VectorXd &x_in,
-                    const Eigen::MatrixXd &P_in,
-                    const Eigen::MatrixXd &F_in,
-                    const Eigen::MatrixXd &H_in,
-                    const Eigen::MatrixXd &R_in,
-                    const Eigen::MatrixXd &Q_in) = 0;
+  virtual void SetState(const VectorXd& state_mean,
+                        const MatrixXd& state_cov) = 0;
 
-  virtual void Predict() = 0;
-  virtual void Update(const Eigen::VectorXd &z) = 0;
-  virtual void UpdateEKF(const Eigen::VectorXd &z) = 0;
+  /**
+   * Perform prediction step
+   * @param F Transition matrix
+   * @param Q Process covariance matrix
+   */
+  virtual void Predict(const MatrixXd &F, const MatrixXd &Q) = 0;
 
-  virtual void SetState(const Eigen::VectorXd& state_mean,
-                        const Eigen::MatrixXd& state_cov) = 0;
+  /**
+   * Perform measurement step
+   * @param y residual between current measurement and expected from the state
+   * @param H Measurement matrix or measurement Jacobian
+   * @param R Measurement covariance matrix
+   */
+  virtual void Update(const VectorXd &y,
+                      const MatrixXd &H,
+                      const MatrixXd &R) = 0;
+
+  virtual const VectorXd& GetStateMean() const = 0;
 };
 
 class KalmanFilter : public IKalmanFilter {
  public:
-  void Init(const Eigen::VectorXd &x_in,
-            const Eigen::MatrixXd &P_in,
-            const Eigen::MatrixXd &F_in,
-            const Eigen::MatrixXd &H_in,
-            const Eigen::MatrixXd &R_in,
-            const Eigen::MatrixXd &Q_in) override;
+  void SetState(const VectorXd& state_mean,
+                const MatrixXd& state_cov) override;
 
-  void Predict() override;
-  void Update(const Eigen::VectorXd &z) override;
-  void UpdateEKF(const Eigen::VectorXd &z) override;
+  void Predict(const MatrixXd &F, const MatrixXd &Q) override;
 
-  void SetState(const Eigen::VectorXd& state_mean,
-                const Eigen::MatrixXd& state_cov) override;
+  void Update(const VectorXd &y,
+              const MatrixXd &H,
+              const MatrixXd &R) override;
 
-  Eigen::VectorXd GetStateMean() const;
-  Eigen::MatrixXd GetStateCov() const;
+  const VectorXd& GetStateMean() const override;
+  const MatrixXd& GetStateCov() const;
 
  private:
   // state vector
-  Eigen::VectorXd x_;
+  VectorXd x_;
 
   // state covariance matrix
-  Eigen::MatrixXd P_;
+  MatrixXd P_;
 
   // state transistion matrix
-  Eigen::MatrixXd F_;
+  MatrixXd F_;
 
   // process covariance matrix
-  Eigen::MatrixXd Q_;
+  MatrixXd Q_;
 
   // measurement matrix
-  Eigen::MatrixXd H_;
+  MatrixXd H_;
 
   // measurement covariance matrix
-  Eigen::MatrixXd R_;
+  MatrixXd R_;
 };
 
 #endif  // SRC_KALMAN_FILTER_H_

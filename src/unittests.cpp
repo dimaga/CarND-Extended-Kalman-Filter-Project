@@ -100,29 +100,188 @@ TEST_CASE("PredictRadarMeasurementJac() tests",
 
 class KalmanFilterStub : public IKalmanFilter {
  public:
-  void Init(const Eigen::VectorXd &x_in,
-            const Eigen::MatrixXd &P_in,
-            const Eigen::MatrixXd &F_in,
-            const Eigen::MatrixXd &H_in,
-            const Eigen::MatrixXd &R_in,
-            const Eigen::MatrixXd &Q_in) override {
+  void SetState(const VectorXd& state_mean,
+                const MatrixXd& state_cov) override {
+    state_mean_ = state_mean;
+    state_cov_ = state_cov;
+    ++set_state_calls_;
   }
 
-  void Predict() override {
+  void Predict(const MatrixXd &F, const MatrixXd &Q) override {
+    F_ = F;
+    Q_ = Q;
+    ++predict_calls_;
   }
 
-  void Update(const Eigen::VectorXd &z) override {
+  void Update(const VectorXd &y,
+              const MatrixXd &H,
+              const MatrixXd &R) override {
+    y_ = y;
+    H_ = H;
+    R_ = R;
+    ++update_calls_;
   }
 
-  void UpdateEKF(const Eigen::VectorXd &z) override {
+  const VectorXd& GetStateMean() const override {
+    return state_mean_;
   }
 
-  void SetState(const Eigen::VectorXd& state_mean,
-                const Eigen::MatrixXd& state_cov) override {
-  }
+  VectorXd state_mean_{};
+  MatrixXd state_cov_{};
+  int set_state_calls_{0};
+
+  MatrixXd F_{};
+  MatrixXd Q_{};
+  int predict_calls_{0};
+
+  VectorXd y_{};
+  MatrixXd H_{};
+  MatrixXd R_{};
+  int update_calls_{0};
 };
 
 TEST_CASE("FusionEKF tests", "[tools][FusionEKF]") {
   KalmanFilterStub stub;
   FusionEKF fusion(&stub);
+
+  SECTION("Lidar Measurement") {
+    MeasurementPackage measurement;
+    measurement.sensor_type_ = MeasurementPackage::LASER;
+    measurement.timestamp_ = 0;
+    measurement.raw_measurements_ = Eigen::Vector2d{10, 20};
+    fusion.ProcessMeasurement(measurement);
+
+    REQUIRE(0 == stub.update_calls_);
+    REQUIRE(0 == stub.predict_calls_);
+    REQUIRE(1 == stub.set_state_calls_);
+    REQUIRE(4 == stub.state_mean_.size());
+    REQUIRE(4 == stub.state_cov_.rows());
+    REQUIRE(4 == stub.state_cov_.cols());
+    REQUIRE(Approx(10) == stub.state_mean_(0));
+    REQUIRE(Approx(20) == stub.state_mean_(1));
+
+    SECTION("Second Lidar Measurement") {
+      MeasurementPackage measurement;
+      measurement.sensor_type_ = MeasurementPackage::LASER;
+      measurement.timestamp_ = 10000000;
+      measurement.raw_measurements_ = Eigen::Vector2d{20, 20};
+      fusion.ProcessMeasurement(measurement);
+
+      REQUIRE(1 == stub.predict_calls_);
+
+      Eigen::Matrix4d expected_F;
+      expected_F <<
+        1.0, 0.0, 10.0, 0.0,
+        0.0, 1.0, 0.0, 10.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0;
+
+      REQUIRE(stub.F_.isApprox(expected_F));
+      REQUIRE(stub.Q_.isApprox(stub.Q_.transpose()));
+      REQUIRE(stub.Q_.eigenvalues()[0].real() > 1e-10);
+
+      REQUIRE(1 == stub.update_calls_);
+      REQUIRE(Approx(10) == stub.y_(0));
+      REQUIRE(Approx(0) == stub.y_(1));
+      REQUIRE(2 == stub.H_.rows());
+      REQUIRE(4 == stub.H_.cols());
+      REQUIRE(2 == stub.R_.rows());
+      REQUIRE(2 == stub.R_.cols());
+    }
+
+    SECTION("Second Radar Measurement") {
+      MeasurementPackage measurement;
+      measurement.sensor_type_ = MeasurementPackage::RADAR;
+      measurement.timestamp_ = 1000000;
+      measurement.raw_measurements_ = Eigen::Vector3d{20, M_PI / 2, 1.0};
+      fusion.ProcessMeasurement(measurement);
+
+      REQUIRE(1 == stub.update_calls_);
+      REQUIRE(3 == stub.H_.rows());
+      REQUIRE(4 == stub.H_.cols());
+      REQUIRE(3 == stub.R_.rows());
+      REQUIRE(3 == stub.R_.cols());
+
+      REQUIRE(stub.state_cov_.isApprox(stub.state_cov_.transpose()));
+      REQUIRE(stub.state_cov_.eigenvalues()[0].real() > 1e-10);
+    }
+  }
+
+  SECTION("Radar Measurement") {
+    MeasurementPackage measurement;
+    measurement.sensor_type_ = MeasurementPackage::RADAR;
+    measurement.timestamp_ = 0;
+    measurement.raw_measurements_ = Eigen::Vector3d{1.0, 0.0, 3.0};
+    fusion.ProcessMeasurement(measurement);
+
+    REQUIRE(0 == stub.update_calls_);
+    REQUIRE(1 == stub.set_state_calls_);
+    REQUIRE(4 == stub.state_mean_.size());
+    REQUIRE(4 == stub.state_cov_.rows());
+    REQUIRE(4 == stub.state_cov_.cols());
+    REQUIRE(Approx(1) == stub.state_mean_(0));
+    REQUIRE(Approx(0) == stub.state_mean_(1));
+    REQUIRE(Approx(3) == stub.state_mean_(2));
+    REQUIRE(Approx(0) == stub.state_mean_(3));
+  }
+
+  SECTION("0-ro Radar Measurement") {
+    MeasurementPackage measurement;
+    measurement.sensor_type_ = MeasurementPackage::RADAR;
+    measurement.timestamp_ = 0;
+    measurement.raw_measurements_ = Eigen::Vector3d{0.0, 1.0, 3.0};
+    fusion.ProcessMeasurement(measurement);
+
+    REQUIRE(0 == stub.update_calls_);
+    REQUIRE(1 == stub.set_state_calls_);
+    REQUIRE(4 == stub.state_mean_.size());
+    REQUIRE(4 == stub.state_cov_.rows());
+    REQUIRE(4 == stub.state_cov_.cols());
+    REQUIRE(Approx(0) == stub.state_mean_(0));
+    REQUIRE(Approx(0) == stub.state_mean_(1));
+    REQUIRE(Approx(0) == stub.state_mean_(2));
+    REQUIRE(Approx(0) == stub.state_mean_(3));
+
+    SECTION("Radar Measurement for (0, 0) state is not skipped") {
+      measurement.timestamp_ = 1000000;
+      measurement.raw_measurements_ = Eigen::Vector3d{1.0, 2.0, 3.0};
+      fusion.ProcessMeasurement(measurement);
+      REQUIRE(0 == stub.update_calls_);
+    }
+  }
+
+  SECTION("Correct RADAR Angle Warping") {
+    const double angle_offset = 0.001;
+    const double angle0 = M_PI - angle_offset / 2;
+    const double angle1 = -M_PI + angle_offset / 2;
+
+    MeasurementPackage measurement;
+    measurement.sensor_type_ = MeasurementPackage::RADAR;
+
+    SECTION("Counter clockwise") {
+      measurement.timestamp_ = 0;
+      measurement.raw_measurements_ = Eigen::Vector3d{1.0, angle0, 0.0};
+      fusion.ProcessMeasurement(measurement);
+
+      measurement.timestamp_ = 1000000;
+      measurement.raw_measurements_ = Eigen::Vector3d{1.0, angle1, 0.0};
+      fusion.ProcessMeasurement(measurement);
+
+      REQUIRE(1 == stub.update_calls_);
+      REQUIRE(Approx(angle_offset) == stub.y_[1]);
+    }
+
+    SECTION("Clockwise") {
+      measurement.timestamp_ = 0;
+      measurement.raw_measurements_ = Eigen::Vector3d{1.0, angle1, 0.0};
+      fusion.ProcessMeasurement(measurement);
+
+      measurement.timestamp_ = 1000000;
+      measurement.raw_measurements_ = Eigen::Vector3d{1.0, angle0, 0.0};
+      fusion.ProcessMeasurement(measurement);
+
+      REQUIRE(1 == stub.update_calls_);
+      REQUIRE(Approx(-angle_offset) == stub.y_[1]);
+    }
+  }
 }
