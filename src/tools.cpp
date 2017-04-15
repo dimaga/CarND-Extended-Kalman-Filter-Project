@@ -32,7 +32,7 @@ VectorXd EvaluateRmse(const vector<VectorXd> &estimations,
     resSq.array() += residual * residual;
   }
 
-  resSq /= estimations.size();
+  resSq /= static_cast<double>(estimations.size());
 
   return resSq.cwiseSqrt();
 }

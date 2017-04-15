@@ -326,7 +326,7 @@ TEST_CASE("Kalman Filter tests", "[tools][KalmanFilter][kalman_filter]") {
         Eigen::MatrixXd R(1, 1);
         R << 0.0001;
 
-        const auto y = z - H * kf.GetStateMean();
+        const Eigen::VectorXd y = z - H * kf.GetStateMean();
         kf.Update(y, H, R);
 
         {
