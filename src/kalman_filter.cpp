@@ -18,8 +18,8 @@ void KalmanFilter::Predict(const MatrixXd &F, const MatrixXd &Q) {
 void KalmanFilter::Update(const VectorXd &y,
                           const MatrixXd &H,
                           const MatrixXd &R) {
-  const auto S = (H * state_cov_ * H.transpose() + R).eval();
-  const auto K = (state_cov_ * H.transpose() * S.inverse()).eval();
+  const MatrixXd S = (H * state_cov_ * H.transpose() + R);
+  const MatrixXd K = (state_cov_ * H.transpose() * S.inverse());
   state_mean_ += K * y;
   state_cov_ -= (K * H * state_cov_).eval();
 }
